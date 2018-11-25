@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using ImageGallery.API.Helpers;
 using ImageGallery.API.Services;
 using ImageGallery.Model;
 using Microsoft.AspNetCore.Authorization;
