@@ -4,6 +4,9 @@ This sample demonstrates how to use ASP.NET Core MVC and Docker together.
 
 This sample requires [Docker 17.06](https://docs.docker.com/release-notes/docker-ce) or later of the [Docker client](https://store.docker.com/editions/community/docker-ce-desktop-windows).
 
+Note: original source code copied (with permission) from [SecuringAspNetCore2WithOAuth2AndOIDC](https://github.com/KevinDockx/SecuringAspNetCore2WithOAuth2AndOIDC).
+Projects then dockerized by [Christian Crowhurst](https://github.com/christianacca)
+
 
 ## Try a pre-built ASP.NET Docker Image
 
