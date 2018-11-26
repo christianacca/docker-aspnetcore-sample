@@ -1,0 +1,22 @@
+version: '3.4'
+
+services:
+  marvin.idp:
+    image: ${DOCKER_REGISTRY-}marvinidp
+    build:
+      context: .
+      dockerfile: Marvin.IDP\Dockerfile
+
+  imagegallery.client:
+    image: ${DOCKER_REGISTRY-}imagegalleryclient
+    build:
+      context: .
+      dockerfile: ImageGallery.Client\Dockerfile
+
+
+  imagegallery.api:
+    image: ${DOCKER_REGISTRY-}imagegalleryapi
+    build:
+      context: .
+      dockerfile: ImageGallery.API\Dockerfile
+
