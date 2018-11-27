@@ -18,7 +18,7 @@ namespace Marvin.IDP
             services.AddMvc();
 
             services.AddIdentityServer()
-                .AddDeveloperSigningCredential(persistKey: false)
+                .AddDeveloperSigningCredential()
                 .AddTestUsers(Config.GetUsers())
                 .AddInMemoryIdentityResources(Config.GetIdentityResources())
                 .AddInMemoryApiResources(Config.GetApiResources())
