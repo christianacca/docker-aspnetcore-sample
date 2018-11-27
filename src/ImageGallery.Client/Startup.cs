@@ -57,9 +57,11 @@ namespace ImageGallery.Client
                   options.AccessDeniedPath = "/Authorization/AccessDenied";
               })
               .AddOpenIdConnect("oidc", options =>
-              {
+                {
                   options.SignInScheme = "Cookies";
-                  options.Authority = "https://localhost:44379";
+                  // note: assume TLS offloading in reverse proxy
+                  options.RequireHttpsMetadata = false;
+                  options.Authority = "http://localhost:44379";
                   options.ClientId = "imagegalleryclient";
                   options.ResponseType = "code id_token";
                   //options.CallbackPath = new PathString("...")

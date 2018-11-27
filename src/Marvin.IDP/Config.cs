@@ -107,11 +107,11 @@ namespace Marvin.IDP
                     UpdateAccessTokenClaimsOnRefresh = true,
                     RedirectUris = new List<string>()
                     {
-                        "https://localhost:44355/signin-oidc"
+                        "http://localhost:44355/signin-oidc"
                     },
                     PostLogoutRedirectUris = new List<string>()
                     {
-                        "https://localhost:44355/signout-callback-oidc"
+                        "http://localhost:44355/signout-callback-oidc"
                     },
                     AllowedScopes =
                     {

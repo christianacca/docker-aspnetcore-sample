@@ -56,7 +56,7 @@ namespace ImageGallery.Client.Services
                 _httpClient.SetBearerToken(accessToken);
             }
 
-            _httpClient.BaseAddress = new Uri("https://localhost:44351/");
+            _httpClient.BaseAddress = new Uri("http://localhost:44351/");
             _httpClient.DefaultRequestHeaders.Accept.Clear();
             _httpClient.DefaultRequestHeaders.Accept.Add(
                 new MediaTypeWithQualityHeaderValue("application/json"));
@@ -70,7 +70,7 @@ namespace ImageGallery.Client.Services
             var currentContext = _httpContextAccessor.HttpContext;
 
             // get the metadata
-            var discoveryClient = new DiscoveryClient("https://localhost:44379/");
+            var discoveryClient = new DiscoveryClient("http://localhost:44379/");
             var metaDataResponse = await discoveryClient.GetAsync();
 
             // create a new token client to get new tokens

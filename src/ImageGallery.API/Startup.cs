@@ -47,7 +47,9 @@ namespace ImageGallery.API
                 IdentityServerAuthenticationDefaults.AuthenticationScheme)
                 .AddIdentityServerAuthentication(options =>
                 {
-                    options.Authority = "https://localhost:44379/";
+                    // note: assume TLS offloading in reverse proxy
+                    options.Authority = "http://localhost:44379/";
+                    options.RequireHttpsMetadata = false;
                     options.ApiName = "imagegalleryapi";
                     options.ApiSecret = "apisecret";
                 });

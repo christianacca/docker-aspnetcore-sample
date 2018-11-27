@@ -181,7 +181,7 @@ namespace ImageGallery.Client.Controllers
         [Authorize(Policy = "CanOrderFrame")]
         public async Task<IActionResult> OrderFrame()
         {
-            var discoveryClient = new DiscoveryClient("https://localhost:44379/");
+            var discoveryClient = new DiscoveryClient("http://localhost:44379/");
             var metaDataResponse = await discoveryClient.GetAsync();
 
             var userInfoClient = new UserInfoClient(metaDataResponse.UserInfoEndpoint);
@@ -224,7 +224,7 @@ namespace ImageGallery.Client.Controllers
         public async Task Logout()
         {
             // get the metadata
-            var discoveryClient = new DiscoveryClient("https://localhost:44379/");
+            var discoveryClient = new DiscoveryClient("http://localhost:44379/");
             var metaDataResponse = await discoveryClient.GetAsync();
 
             // create a TokenRevocationClient
