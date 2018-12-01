@@ -1,32 +1,42 @@
-﻿using IdentityServer4.AccessTokenValidation;
+﻿using AutoMapper;
+using IdentityServer4.AccessTokenValidation;
 using ImageGallery.API.Authorization;
 using ImageGallery.API.Entities;
 using ImageGallery.API.Services;
+using ImageGallery.API.Settings;
+using ImageGallery.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Image = ImageGallery.API.Entities.Image;
 
 namespace ImageGallery.API
 {
     public class Startup
     {
-        public IConfiguration Configuration { get; }
-
-        public Startup(IConfiguration configuration)
+        public Startup(IOptions<TokenProviderSettings> tokenProviderSettings, IOptions<DbSettings> dbSettings)
         {
-            Configuration = configuration;
+            TokenProviderSettings = tokenProviderSettings.Value;
+            DbSettings = dbSettings.Value;
         }
-        
-        // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit http://go.microsoft.com/fwlink/?LinkID=398940
+
+        private TokenProviderSettings TokenProviderSettings { get; }
+        private DbSettings DbSettings { get; }
+
+        /// <summary>
+        ///     Add services to the DI container.
+        /// </summary>
+        /// <remarks>
+        ///     This method gets called by the runtime
+        /// </remarks>
         public void ConfigureServices(IServiceCollection services)
         {
-             services.AddMvc();
+            services.AddMvc();
 
             services.AddAuthorization(authorizationOptions =>
             {
@@ -36,36 +46,35 @@ namespace ImageGallery.API
                     {
                         policyBuilder.RequireAuthenticatedUser();
                         policyBuilder.AddRequirements(
-                                new MustOwnImageRequirement());
+                            new MustOwnImageRequirement());
                     });
-
             });
 
             services.AddScoped<IAuthorizationHandler, MustOwnImageHandler>();
 
             services.AddAuthentication(
-                IdentityServerAuthenticationDefaults.AuthenticationScheme)
+                    IdentityServerAuthenticationDefaults.AuthenticationScheme)
                 .AddIdentityServerAuthentication(options =>
                 {
-                    // note: assume TLS offloading in reverse proxy
-                    options.Authority = "http://localhost:44379/";
+                    options.Authority = TokenProviderSettings.BaseUrl;
                     options.RequireHttpsMetadata = false;
                     options.ApiName = "imagegalleryapi";
                     options.ApiSecret = "apisecret";
                 });
 
-            // register the DbContext on the container, getting the connection string from
-            // appSettings (note: use this during development; in a production environment,
-            // it's better to store the connection string in an environment variable)
-            var connectionString = Configuration["ConnectionStrings:imageGalleryDBConnectionString"];
-            services.AddDbContext<GalleryContext>(o => o.UseSqlServer(connectionString));
+            services.AddDbContext<GalleryContext>(o => o.UseSqlServer(DbSettings.ConnectionString));
 
             // register the repository
             services.AddScoped<IGalleryRepository, GalleryRepository>();
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, 
+        /// <summary>
+        ///     Configures the HTTP request pipeline
+        /// </summary>
+        /// <remarks>
+        ///     This method gets called by the runtime
+        /// </remarks>
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env,
             ILoggerFactory loggerFactory, GalleryContext galleryContext)
         {
             if (env.IsDevelopment())
@@ -89,29 +98,38 @@ namespace ImageGallery.API
 
             app.UseStaticFiles();
 
-            AutoMapper.Mapper.Initialize(cfg =>
+            Mapper.Initialize(cfg =>
             {
                 // Map from Image (entity) to Image, and back
                 cfg.CreateMap<Image, Model.Image>().ReverseMap();
 
                 // Map from ImageForCreation to Image
                 // Ignore properties that shouldn't be mapped
-                cfg.CreateMap<Model.ImageForCreation, Image>()
+                cfg.CreateMap<ImageForCreation, Image>()
                     .ForMember(m => m.FileName, options => options.Ignore())
                     .ForMember(m => m.Id, options => options.Ignore())
                     .ForMember(m => m.OwnerId, options => options.Ignore());
 
                 // Map from ImageForUpdate to Image
                 // ignore properties that shouldn't be mapped
-                cfg.CreateMap<Model.ImageForUpdate, Image>()
+                cfg.CreateMap<ImageForUpdate, Image>()
                     .ForMember(m => m.FileName, options => options.Ignore())
                     .ForMember(m => m.Id, options => options.Ignore())
                     .ForMember(m => m.OwnerId, options => options.Ignore());
             });
 
-            AutoMapper.Mapper.AssertConfigurationIsValid();            
+            Mapper.AssertConfigurationIsValid();
 
-            app.UseMvc(); 
+            app.UseMvc();
+        }
+
+        /// <summary>
+        ///     Configure services that are going to be injected into <see cref="Startup" />
+        /// </summary>
+        public static void ConfigureStartupServices(WebHostBuilderContext ctx, IServiceCollection services)
+        {
+            services.Configure<TokenProviderSettings>(ctx.Configuration.GetSection("TokenProvider"));
+            services.Configure<DbSettings>(ctx.Configuration.GetSection("Db"));
         }
     }
 }

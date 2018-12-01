@@ -8,17 +8,24 @@ using System.Globalization;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using ImageGallery.Client.Helpers;
+using ImageGallery.Client.Settings;
+using Microsoft.Extensions.Options;
 
 namespace ImageGallery.Client.Services
 {
     public class ImageGalleryHttpClient : IImageGalleryHttpClient
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private HttpClient _httpClient = new HttpClient();
+        private readonly TokenProviderSettings _tokenProviderSettings;
+        private readonly HttpClient _httpClient;
 
-        public ImageGalleryHttpClient(IHttpContextAccessor httpContextAccessor)
+        public ImageGalleryHttpClient(IHttpContextAccessor httpContextAccessor, IOptions<TokenProviderSettings> tokenProviderSettings, IOptions<ImageGalleryApiSettings> imageGalleryApiSettings)
         {
             _httpContextAccessor = httpContextAccessor;
+            _tokenProviderSettings = tokenProviderSettings.Value;
+            _httpClient = new HttpClient {BaseAddress = new Uri(imageGalleryApiSettings.Value.BaseUrl) };
+            ImagePublicBaseUrl = new Uri(imageGalleryApiSettings.Value.PublicBaseUrl).AppendPath("images");
         }
         
         public async Task<HttpClient> GetClient()
@@ -56,7 +63,6 @@ namespace ImageGallery.Client.Services
                 _httpClient.SetBearerToken(accessToken);
             }
 
-            _httpClient.BaseAddress = new Uri("http://localhost:44351/");
             _httpClient.DefaultRequestHeaders.Accept.Clear();
             _httpClient.DefaultRequestHeaders.Accept.Add(
                 new MediaTypeWithQualityHeaderValue("application/json"));
@@ -70,7 +76,14 @@ namespace ImageGallery.Client.Services
             var currentContext = _httpContextAccessor.HttpContext;
 
             // get the metadata
-            var discoveryClient = new DiscoveryClient("http://localhost:44379/");
+            var discoveryClient = new DiscoveryClient(_tokenProviderSettings.BaseUrl)
+            {
+                Policy = new DiscoveryPolicy
+                {
+                    // todo: don't hard code this
+                    RequireHttps = false
+                }
+            };
             var metaDataResponse = await discoveryClient.GetAsync();
 
             // create a new token client to get new tokens
@@ -134,6 +147,7 @@ namespace ImageGallery.Client.Services
         }
 
 
+        public Uri ImagePublicBaseUrl { get; }
     }
 }
 

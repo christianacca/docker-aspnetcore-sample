@@ -12,6 +12,7 @@ namespace ImageGallery.Client
 
         public static IWebHost BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
+                .ConfigureServices(Startup.ConfigureStartupServices)
                 .UseStartup<Startup>()
                 .Build();
     }

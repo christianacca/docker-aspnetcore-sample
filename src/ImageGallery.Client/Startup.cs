@@ -9,17 +9,21 @@ using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.IdentityModel.Tokens;
 using IdentityModel;
+using ImageGallery.Client.Settings;
+using Microsoft.Extensions.Options;
 
 namespace ImageGallery.Client
 {
     public class Startup
     {
         public IConfiguration Configuration { get; }
+        private TokenProviderSettings TokenProviderSettings { get; }
 
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration, IOptions<TokenProviderSettings> tokenProviderSettings)
         {
             Configuration = configuration;
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+            TokenProviderSettings = tokenProviderSettings.Value;
         }
  
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -44,6 +48,8 @@ namespace ImageGallery.Client
             // HttpContext in services by injecting it
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
+            services.Configure<ImageGalleryApiSettings>(Configuration.GetSection("ImageGalleryApi"));
+
             // register an IImageGalleryHttpClient
             services.AddScoped<IImageGalleryHttpClient, ImageGalleryHttpClient>();
 
@@ -61,7 +67,7 @@ namespace ImageGallery.Client
                   options.SignInScheme = "Cookies";
                   // note: assume TLS offloading in reverse proxy
                   options.RequireHttpsMetadata = false;
-                  options.Authority = "http://localhost:44379";
+                  options.Authority = TokenProviderSettings.BaseUrl;
                   options.ClientId = "imagegalleryclient";
                   options.ResponseType = "code id_token";
                   //options.CallbackPath = new PathString("...")
@@ -119,6 +125,11 @@ namespace ImageGallery.Client
                     name: "default",
                     template: "{controller=Gallery}/{action=Index}/{id?}");
             });
+        }
+
+        public static void ConfigureStartupServices(WebHostBuilderContext ctx, IServiceCollection services)
+        {
+            services.Configure<TokenProviderSettings>(ctx.Configuration.GetSection("TokenProvider"));
         }
     }
 }

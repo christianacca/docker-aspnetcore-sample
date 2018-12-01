@@ -14,6 +14,8 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using ImageGallery.Client.Settings;
+using Microsoft.Extensions.Options;
 
 namespace ImageGallery.Client.Controllers
 {
@@ -21,10 +23,12 @@ namespace ImageGallery.Client.Controllers
     public class GalleryController : Controller
     {
         private readonly IImageGalleryHttpClient _imageGalleryHttpClient;
+        private readonly TokenProviderSettings _tokenProviderSettings;
 
-        public GalleryController(IImageGalleryHttpClient imageGalleryHttpClient)
+        public GalleryController(IImageGalleryHttpClient imageGalleryHttpClient, IOptions<TokenProviderSettings> tokenProviderSettings)
         {
             _imageGalleryHttpClient = imageGalleryHttpClient;
+            _tokenProviderSettings = tokenProviderSettings.Value;
         }
 
         public async Task<IActionResult> Index()
@@ -40,8 +44,11 @@ namespace ImageGallery.Client.Controllers
             {
                 var imagesAsString = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-                var galleryIndexViewModel = new GalleryIndexViewModel(
-                    JsonConvert.DeserializeObject<IList<Image>>(imagesAsString).ToList());
+                var galleryIndexViewModel = new GalleryIndexViewModel
+                {
+                    Images = JsonConvert.DeserializeObject<IList<Image>>(imagesAsString).ToList(),
+                    ImageBaseUrl = _imageGalleryHttpClient.ImagePublicBaseUrl
+                };
 
                 return View(galleryIndexViewModel);
             }
@@ -181,7 +188,14 @@ namespace ImageGallery.Client.Controllers
         [Authorize(Policy = "CanOrderFrame")]
         public async Task<IActionResult> OrderFrame()
         {
-            var discoveryClient = new DiscoveryClient("http://localhost:44379/");
+            var discoveryClient = new DiscoveryClient(_tokenProviderSettings.BaseUrl)
+            {
+                Policy = new DiscoveryPolicy
+                {
+                    // todo: don't hard code this
+                    RequireHttps = false
+                }
+            };
             var metaDataResponse = await discoveryClient.GetAsync();
 
             var userInfoClient = new UserInfoClient(metaDataResponse.UserInfoEndpoint);
@@ -224,8 +238,7 @@ namespace ImageGallery.Client.Controllers
         public async Task Logout()
         {
             // get the metadata
-            var discoveryClient = new DiscoveryClient("http://localhost:44379/");
-            var metaDataResponse = await discoveryClient.GetAsync();
+            var metaDataResponse = await GetOidcDiscoveryDocument();
 
             // create a TokenRevocationClient
             var revocationClient = new TokenRevocationClient(
@@ -269,6 +282,32 @@ namespace ImageGallery.Client.Controllers
             // Clears the  local cookie ("Cookies" must match name from scheme)
             await HttpContext.SignOutAsync("Cookies");
             await HttpContext.SignOutAsync("oidc");
+        }
+
+        private async Task<DiscoveryResponse> GetOidcDiscoveryDocument()
+        {
+            var discoveryClient = new DiscoveryClient(_tokenProviderSettings.BaseUrl)
+            {
+                Policy = new DiscoveryPolicy
+                {
+                    // todo: don't hard code this
+                    RequireHttps = false
+                }
+            };
+            var response = await discoveryClient.GetAsync();
+            if (response.IsError)
+            {
+                if (response.Exception != null)
+                {
+                    throw response.Exception;
+                }
+                else
+                {
+                    throw new Exception(response.Error);
+                }
+            }
+
+            return response;
         }
     }
 }

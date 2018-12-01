@@ -1,11 +1,9 @@
 ﻿using IdentityServer4;
 using IdentityServer4.Models;
 using IdentityServer4.Test;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
+using Marvin.IDP.Settings;
 
 namespace Marvin.IDP
 {
@@ -89,7 +87,7 @@ namespace Marvin.IDP
         }
 
 
-        public static IEnumerable<Client> GetClients()
+        public static IEnumerable<Client> GetClients(GalleryOidcClientSettings clientSettings)
         {
             return new List<Client>()
             {
@@ -107,11 +105,11 @@ namespace Marvin.IDP
                     UpdateAccessTokenClaimsOnRefresh = true,
                     RedirectUris = new List<string>()
                     {
-                        "http://localhost:44355/signin-oidc"
+                        clientSettings.RedirectUrl
                     },
                     PostLogoutRedirectUris = new List<string>()
                     {
-                        "http://localhost:44355/signout-callback-oidc"
+                        clientSettings.PostLogoutRedirectUrl
                     },
                     AllowedScopes =
                     {

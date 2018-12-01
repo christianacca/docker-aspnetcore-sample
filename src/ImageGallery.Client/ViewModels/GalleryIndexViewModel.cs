@@ -1,16 +1,20 @@
-﻿using ImageGallery.Model;
+﻿using System;
+using ImageGallery.Model;
 using System.Collections.Generic;
+using ImageGallery.Client.Helpers;
 
 namespace ImageGallery.Client.ViewModels
 {
     public class GalleryIndexViewModel
     {
-        public IEnumerable<Image> Images { get; private set; }
+        public IList<Image> Images { get; set; }
             = new List<Image>();
 
-        public GalleryIndexViewModel(List<Image> images)
+        public Uri ImageBaseUrl { get; set; }
+
+        public string GetImageUrl(Image item)
         {
-           Images = images;
+            return ImageBaseUrl.AppendPath(item.FileName).ToString();
         }
     }
 }

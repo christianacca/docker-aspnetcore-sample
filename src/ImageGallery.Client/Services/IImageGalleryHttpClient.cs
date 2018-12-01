@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace ImageGallery.Client.Services
@@ -6,5 +7,6 @@ namespace ImageGallery.Client.Services
     public interface IImageGalleryHttpClient
     {
         Task<HttpClient> GetClient();
+        Uri ImagePublicBaseUrl { get; }
     }
 }
