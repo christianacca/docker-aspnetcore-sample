@@ -1,0 +1,45 @@
+version: '2.4'
+
+services:
+
+  db:
+    image: christianacca/mssql-server-windows-express
+    environment:
+      - sa_password=This1sthesapassword1
+      - ACCEPT_EULA=Y
+
+  api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - TokenProvider__BaseUrl=http://sts:5000
+      - Db__ConnectionString=Server=db;Database=ImageGalleryDB;User Id=sa;Password=This1sthesapassword1;
+    ports: 
+      - "44351:80"
+    depends_on: 
+      - db
+
+  client:
+    environment: 
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ImageGalleryApi__BaseUrl=http://api
+      - ImageGalleryApi__PublicBaseUrl=http://localhost:44351
+      - TokenProvider__BaseUrl=http://sts:5000
+    ports:
+      - "44355:80"
+
+  sts:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5000
+      # note: when running locally add the followin hosts file entry: sts 127.0.0.1
+      - TokenProvider__BaseUrl=http://sts:5000
+      - GalleryOidcClient__BaseUrl=http://localhost:44355
+    ports:
+      - "5000:5000"
+    expose:
+      - 5000
+
+networks:
+  default:
+    external:
+      name: nat

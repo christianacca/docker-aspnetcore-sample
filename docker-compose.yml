@@ -1,0 +1,21 @@
+version: '2.4'
+
+services:
+
+  api:
+    image: ${DOCKER_REGISTRY:-christianacca}/aspnetcore-sample-api
+    build:
+      context: src
+      dockerfile: ImageGallery.API\Dockerfile
+
+  client:
+    image: ${DOCKER_REGISTRY:-christianacca}/aspnetcore-sample-client
+    build:
+      context: src
+      dockerfile: ImageGallery.Client\Dockerfile
+
+  sts:
+    image: ${DOCKER_REGISTRY:-christianacca}/aspnetcore-sample-sts
+    build:
+      context: src
+      dockerfile: Marvin.IDP\Dockerfile
