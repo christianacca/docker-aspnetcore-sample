@@ -7,16 +7,23 @@ services:
     environment:
       - sa_password=This1sthesapassword1
       - ACCEPT_EULA=Y
+    healthcheck:
+      test: ["CMD", "sqlcmd", "-Q", "select 1"]
+      start_period: 90s
 
   api:
     environment:
+      # note: environment variables take precedence over the same keys defined in user secrets volumes bind mounted below
       - ASPNETCORE_ENVIRONMENT=Development
       - TokenProvider__BaseUrl=http://sts:5000
       - Db__ConnectionString=Server=db;Database=ImageGalleryDB;User Id=sa;Password=This1sthesapassword1;
     ports: 
       - "44351:80"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:C:\Users\ContainerUser\AppData\Roaming\Microsoft\UserSecrets:ro
     depends_on: 
-      - db
+      db:
+        condition: service_healthy
 
   client:
     environment: 
