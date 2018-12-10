@@ -16,7 +16,7 @@ namespace ImageGallery.API
     {
         public static void Main(string[] args)
         {
-            var host = BuildWebHost(args);
+            var host = CreateWebHostBuilder(args).Build();
 
             // migrate & seed the database.  Best practice = in Main, using service scope
             using (var scope = host.Services.CreateScope())
@@ -48,10 +48,9 @@ namespace ImageGallery.API
             logger.LogInformation($"Connection to db: {sanitizedCnnStrng}");
         }
 
-        public static IWebHost BuildWebHost(string[] args) =>
+        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
                 .ConfigureServices(Startup.ConfigureStartupServices)
-                .UseStartup<Startup>()
-                .Build();
+                .UseStartup<Startup>();
     }
 }
