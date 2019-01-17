@@ -25,7 +25,7 @@ namespace ImageGallery.Client.Services
             _httpContextAccessor = httpContextAccessor;
             _tokenProviderSettings = tokenProviderSettings.Value;
             _httpClient = new HttpClient {BaseAddress = new Uri(imageGalleryApiSettings.Value.BaseUrl) };
-            ImagePublicBaseUrl = new Uri(imageGalleryApiSettings.Value.PublicBaseUrl).AppendPath("images");
+            ImagePublicBaseUrl = new Uri(imageGalleryApiSettings.Value.PublicBaseUrl).AppendPath("imgs");
         }
         
         public async Task<HttpClient> GetClient()

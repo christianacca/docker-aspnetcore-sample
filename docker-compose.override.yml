@@ -3,46 +3,37 @@ version: '2.4'
 services:
 
   db:
-    image: christianacca/mssql-server-windows-express
+    image: mcr.microsoft.com/mssql/server
     environment:
-      - sa_password=This1sthesapassword1
+      - SA_PASSWORD=This1sthesapassword1
       - ACCEPT_EULA=Y
-    healthcheck:
-      test: ["CMD", "sqlcmd", "-Q", "select 1"]
-      start_period: 90s
 
   api:
     environment:
       # note: environment variables take precedence over the same keys defined in user secrets volumes bind mounted below
       - ASPNETCORE_ENVIRONMENT=Development
-      - TokenProvider__BaseUrl=http://${COMPUTERNAME}:5000
+      - TokenProvider__BaseUrl=http://host.docker.internal:5000
       - Db__ConnectionString=Server=db;Database=ImageGalleryDB;User Id=sa;Password=This1sthesapassword1;
     ports: 
       - "44351:80"
     volumes:
-      - ${APPDATA}/Microsoft/UserSecrets:C:\Users\ContainerUser\AppData\Roaming\Microsoft\UserSecrets:ro
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
     depends_on: 
-      db:
-        condition: service_healthy
+      - db
 
   client:
     environment: 
       - ASPNETCORE_ENVIRONMENT=Development
       - ImageGalleryApi__BaseUrl=http://api
       - ImageGalleryApi__PublicBaseUrl=http://localhost:44351
-      - TokenProvider__BaseUrl=http://${COMPUTERNAME}:5000
+      - TokenProvider__BaseUrl=http://host.docker.internal:5000
     ports:
       - "44355:80"
 
   sts:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - TokenProvider__BaseUrl=http://${COMPUTERNAME}:5000
+      - TokenProvider__BaseUrl=http://host.docker.internal:5000
       - GalleryOidcClient__BaseUrl=http://localhost:44355
     ports:
       - "5000:80"
-
-networks:
-  default:
-    external:
-      name: nat
