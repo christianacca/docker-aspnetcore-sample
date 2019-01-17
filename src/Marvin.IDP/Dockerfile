@@ -7,7 +7,7 @@ FROM microsoft/dotnet:2.2-sdk AS build
 WORKDIR /src
 
 # optimize cache by performing restore with against csproj file(s)
-COPY NuGet.config NuGet.config
+COPY ["NuGet.config", "Directory.Build.props", "./"]
 COPY Marvin.IDP/Marvin.IDP.csproj Marvin.IDP/
 RUN dotnet restore Marvin.IDP/Marvin.IDP.csproj --configfile NuGet.config
 

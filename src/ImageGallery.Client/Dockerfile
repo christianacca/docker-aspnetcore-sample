@@ -7,7 +7,7 @@ FROM microsoft/dotnet:2.2-sdk AS build
 WORKDIR /src
 
 # optimize cache by performing restore with against csproj file(s)
-COPY NuGet.config NuGet.config
+COPY ["NuGet.config", "Directory.Build.props", "./"]
 COPY ImageGallery.Model/ImageGallery.Model.csproj ImageGallery.Model/
 COPY ImageGallery.Client/ImageGallery.Client.csproj ImageGallery.Client/
 RUN dotnet restore ImageGallery.Client/ImageGallery.Client.csproj --configfile NuGet.config
