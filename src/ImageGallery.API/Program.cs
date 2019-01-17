@@ -9,12 +9,13 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Data.SqlClient;
+using System.Threading.Tasks;
 
 namespace ImageGallery.API
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var host = CreateWebHostBuilder(args).Build();
 
@@ -26,8 +27,9 @@ namespace ImageGallery.API
                 {
                     var context = scope.ServiceProvider.GetRequiredService<GalleryContext>();
                     LogConnectionString(scope, logger);
-                    context.Database.Migrate();
-                    context.EnsureSeedDataForContext();
+
+                    await context.Database.MigrateAsync();
+                    await context.EnsureSeedDataForContextAsync();
                 }
                 catch (Exception ex)
                 {
@@ -45,6 +47,10 @@ namespace ImageGallery.API
             DbSettings dbSettings = scope.ServiceProvider.GetRequiredService<IOptions<DbSettings>>().Value;
             var sanitizedCnnStrng = new SqlConnectionStringBuilder(dbSettings.ConnectionString)
                 .SanitizedConnectionString();
+
+            // Console.Out.WriteLine("Connection to db: {0}", dbSettings.ConnectionString);
+            
+            // not sure whether logging is wired up yet
             logger.LogInformation($"Connection to db: {sanitizedCnnStrng}");
         }
 

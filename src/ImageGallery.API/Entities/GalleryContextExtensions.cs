@@ -1,17 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace ImageGallery.API.Entities
 {
     public static class GalleryContextExtensions
     {
-        public static void EnsureSeedDataForContext(this GalleryContext context)
+        public static async Task EnsureSeedDataForContextAsync(this GalleryContext context)
         {
             // first, clear the database.  This ensures we can always start 
             // fresh with each demo.  Not advised for production environments, obviously :-)
 
             context.Images.RemoveRange(context.Images);
-            context.SaveChanges();
+            await context.SaveChangesAsync();
 
             // init seed data
             var images = new List<Image>()
@@ -117,7 +118,7 @@ namespace ImageGallery.API.Entities
             };
 
             context.Images.AddRange(images);
-            context.SaveChanges();
+            await context.SaveChangesAsync();
         }
     }
 }
