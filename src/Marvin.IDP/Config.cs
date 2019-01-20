@@ -93,6 +93,20 @@ namespace Marvin.IDP
             {
                 new Client
                 {
+                    ClientId = "Automated_Test",
+                    AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
+                    AllowedScopes =
+                    {
+                        IdentityServerConstants.StandardScopes.OpenId,
+                        "imagegalleryapi"
+                    },
+                    ClientSecrets =
+                    {
+                        new Secret("secret".Sha256())
+                    }
+                },
+                new Client
+                {
                     ClientName = "Image Gallery",
                     ClientId = "imagegalleryclient",
                     AllowedGrantTypes = GrantTypes.Hybrid,

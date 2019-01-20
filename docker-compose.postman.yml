@@ -1,0 +1,35 @@
+version: '2.4'
+
+services:
+
+  db:
+    image: mcr.microsoft.com/mssql/server
+    environment:
+      - SA_PASSWORD=This1sthesapassword1
+      - ACCEPT_EULA=Y
+
+  api:
+    environment:
+      # note: environment variables take precedence over the same keys defined in user secrets volumes bind mounted below
+      - ASPNETCORE_ENVIRONMENT=Development
+      - TokenProvider__BaseUrl=http://sts
+      - Db__ConnectionString=Server=db;Database=ImageGalleryDB;User Id=sa;Password=This1sthesapassword1;
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+    depends_on: 
+      - db
+
+  sts:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - TokenProvider__BaseUrl=http://sts
+      - GalleryOidcClient__BaseUrl=http://client
+
+  # postman:
+  #   image: postman/newman:ubuntu
+  #   volumes:
+  #     - ./sample/postman:/etc/newman
+  #   command: "run postman_collection.json -e docker.postman_environment.json --folder 'Contract Tests'"
+  #   depends_on:
+  #     - api
+  #     - sts
