@@ -25,11 +25,13 @@ services:
       - TokenProvider__BaseUrl=http://sts
       - GalleryOidcClient__BaseUrl=http://client
 
-  # postman:
-  #   image: postman/newman:ubuntu
-  #   volumes:
-  #     - ./sample/postman:/etc/newman
-  #   command: "run postman_collection.json -e docker.postman_environment.json --folder 'Contract Tests'"
-  #   depends_on:
-  #     - api
-  #     - sts
+  postman:
+    image: postman/newman:ubuntu
+    volumes:
+      - ./sample/postman:/etc/newman
+    command: "run postman_collection.json -e docker.postman_environment.json --iteration-count 5 --folder 'Contract Tests'"
+    depends_on:
+      api:
+        condition: service_healthy
+      sts:
+        condition: service_started

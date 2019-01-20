@@ -36,6 +36,8 @@ namespace ImageGallery.API
         /// </remarks>
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddHealthChecks();
+
             services.AddMvc();
 
             services.AddAuthorization(authorizationOptions =>
@@ -93,6 +95,8 @@ namespace ImageGallery.API
                     });
                 });
             }
+
+            app.UseHealthChecks("/api/health");
 
             app.UseAuthentication();
 

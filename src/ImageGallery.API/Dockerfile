@@ -24,5 +24,9 @@ RUN dotnet publish ImageGallery.API.csproj --no-build -c Release -o /app
 
 FROM base AS final
 WORKDIR /app
-COPY --from=publish /app .
+
+# start-period of 90s hopefully enough time for db migrations to run during app startup
+HEALTHCHECK --interval=30s --timeout=20s --start-period=90s `
+	CMD curl --fail http://localhost/api/health || exit
 ENTRYPOINT ["dotnet", "ImageGallery.API.dll"]
+COPY --from=publish /app .
