@@ -374,6 +374,65 @@
 									],
 									"cookie": [],
 									"body": "{\n    \"id\": \"ca9be6e5-36ca-4836-aa70-08d67e16a8dd\",\n    \"title\": \"Postman_request\",\n    \"fileName\": \"3d210e74-8a06-4225-b810-b466c430dc01.jpg\"\n}"
+								},
+								{
+									"name": "Bad Request",
+									"originalRequest": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"name": "Content-Type",
+												"type": "text",
+												"value": "application/json"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": ""
+										},
+										"url": {
+											"raw": "{{apiBaseUrl}}/api/images",
+											"host": [
+												"{{apiBaseUrl}}"
+											],
+											"path": [
+												"api",
+												"images"
+											]
+										}
+									},
+									"status": "Bad Request",
+									"code": 400,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/problem+json; charset=utf-8"
+										},
+										{
+											"key": "Server",
+											"value": "Kestrel"
+										},
+										{
+											"key": "X-SourceFiles",
+											"value": "=?UTF-8?B?QzpcR2l0XGRvY2tlci1hc3BuZXRjb3JlLXNhbXBsZVxzcmNcSW1hZ2VHYWxsZXJ5LkFQSVxhcGlcaW1hZ2Vz?="
+										},
+										{
+											"key": "X-Powered-By",
+											"value": "ASP.NET"
+										},
+										{
+											"key": "Date",
+											"value": "Mon, 21 Jan 2019 08:29:47 GMT"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"errors\": {\n        \"\": [\n            \"A non-empty request body is required.\"\n        ]\n    },\n    \"title\": \"One or more validation errors occurred.\",\n    \"status\": 400,\n    \"traceId\": \"0HLJVFA59HR9E:00000003\"\n}"
 								}
 							]
 						},
@@ -1482,7 +1541,7 @@
 	],
 	"variable": [
 		{
-			"id": "7021761a-e163-49c8-9dc8-42e82d6f0aa6",
+			"id": "75bae2b6-3307-4bac-9fa9-eb3538b90353",
 			"key": "imageSchema",
 			"value": "{\n    \"type\": \"object\",\n    \"properties\": {\n        \"id\": {\n            \"type\": \"string\"\n        },\n        \"title\": {\n            \"type\": \"string\"\n        },\n        \"fileName\": {\n            \"type\": \"string\"\n        }\n    },\n    \"required\": [\"id\", \"title\", \"fileName\"]\n}",
 			"type": "string"
