@@ -9,11 +9,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Image = ImageGallery.API.Entities.Image;
+
+[assembly: ApiConventionType(typeof(ImageGallery.API.Conventions.DefaultApiConventions))]
 
 namespace ImageGallery.API
 {
@@ -38,7 +41,8 @@ namespace ImageGallery.API
         {
             services.AddHealthChecks();
 
-            services.AddMvc();
+            services.AddMvc()
+                .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
             services.AddAuthorization(authorizationOptions =>
             {
@@ -68,6 +72,17 @@ namespace ImageGallery.API
 
             // register the repository
             services.AddScoped<IGalleryRepository, GalleryRepository>();
+
+            services.AddSwaggerDocument(
+                configure =>
+                {
+                    configure.PostProcess = (document) =>
+                    {
+                        document.Info.Version = "v1";
+                        document.Info.Title = "ImageGalleryAPI";
+                        document.Info.Description = "Image Gallery API";
+                    };
+                });
         }
 
         /// <summary>
@@ -97,6 +112,9 @@ namespace ImageGallery.API
             }
 
             app.UseHealthChecks("/api/health");
+
+            app.UseSwagger();
+            app.UseSwaggerUi3();
 
             app.UseAuthentication();
 

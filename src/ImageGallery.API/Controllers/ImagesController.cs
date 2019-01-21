@@ -8,12 +8,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace ImageGallery.API.Controllers
 {
-    [Route("api/images")]
+    [Route("api/[controller]")]
     [Authorize]
-    public class ImagesController : Controller
+    [ApiController]
+    public class ImagesController : ControllerBase
     {
         private readonly IGalleryRepository _galleryRepository;
         private readonly IHostingEnvironment _hostingEnvironment;
@@ -25,52 +27,36 @@ namespace ImageGallery.API.Controllers
             _hostingEnvironment = hostingEnvironment;
         }
 
-        [HttpGet()]
-        public IActionResult GetImages()
+        [HttpGet]
+        public async Task<ActionResult<ICollection<Image>>> GetImages()
         {
-            var ownerId = User.Claims.FirstOrDefault(c => c.Type == "sub").Value;
+            var ownerId = User.Claims.First(c => c.Type == "sub").Value;
 
             // get from repo
-            var imagesFromRepo = _galleryRepository.GetImages(ownerId);
+            var imagesFromRepo = await _galleryRepository.GetImagesAsync(ownerId);
 
             // map to model
-            var imagesToReturn = Mapper.Map<IEnumerable<Model.Image>>(imagesFromRepo);
-
-            // return
-            return Ok(imagesToReturn);
+            return Mapper.Map<IEnumerable<Image>>(imagesFromRepo).ToList();
         }
 
         [HttpGet("{id}", Name = "GetImage")]
         [Authorize("MustOwnImage")]
-        public IActionResult GetImage(Guid id)
+        public async Task<ActionResult<Image>> GetImage(Guid id)
         {          
-            var imageFromRepo = _galleryRepository.GetImage(id);
+            var imageFromRepo = await _galleryRepository.GetImageAsync(id);
 
             if (imageFromRepo == null)
             {
                 return NotFound();
             }
 
-            var imageToReturn = Mapper.Map<Model.Image>(imageFromRepo);
-
-            return Ok(imageToReturn);
+            return Mapper.Map<Image>(imageFromRepo);
         }
 
-        [HttpPost()]
+        [HttpPost]
         [Authorize(Roles = "PayingUser")]
-        public IActionResult CreateImage([FromBody] ImageForCreation imageForCreation)
+        public async Task<ActionResult<Image>> CreateImage([FromBody] ImageForCreation imageForCreation)
         {
-            if (imageForCreation == null)
-            {
-                return BadRequest();
-            }
-
-            if (!ModelState.IsValid)
-            {
-                // return 422 - Unprocessable Entity when validation fails
-                return new UnprocessableEntityObjectResult(ModelState);
-            }
-
             // Automapper maps only the Title in our configuration
             var imageEntity = Mapper.Map<Entities.Image>(imageForCreation);
 
@@ -82,7 +68,7 @@ namespace ImageGallery.API.Controllers
             var webRootPath = _hostingEnvironment.WebRootPath;
 
             // create the filename
-            string fileName = Guid.NewGuid().ToString() + ".jpg";
+            string fileName = $"{Guid.NewGuid()}.jpg";
             
             // the full file path
             var filePath = Path.Combine($"{webRootPath}/imgs/{fileName}");
@@ -98,15 +84,15 @@ namespace ImageGallery.API.Controllers
             //imageEntity.OwnerId = ...;
 
             // set the ownerId on the imageEntity
-            var ownerId = User.Claims.FirstOrDefault(c => c.Type == "sub").Value;
+            var ownerId = User.Claims.First(c => c.Type == "sub").Value;
             imageEntity.OwnerId = ownerId;
 
             // add and save.  
             _galleryRepository.AddImage(imageEntity);
 
-            if (!_galleryRepository.Save())
+            if (!await _galleryRepository.SaveAsync())
             {
-                throw new Exception($"Adding an image failed on save.");
+                throw new Exception("Adding an image failed on save.");
             }
 
             var imageToReturn = Mapper.Map<Image>(imageEntity);
@@ -118,10 +104,9 @@ namespace ImageGallery.API.Controllers
 
         [HttpDelete("{id}")]
         [Authorize("MustOwnImage")]
-        public IActionResult DeleteImage(Guid id)
+        public async Task<ActionResult> DeleteImage(Guid id)
         {
-            
-            var imageFromRepo = _galleryRepository.GetImage(id);
+            var imageFromRepo = await _galleryRepository.GetImageAsync(id);
 
             if (imageFromRepo == null)
             {
@@ -130,7 +115,7 @@ namespace ImageGallery.API.Controllers
 
             _galleryRepository.DeleteImage(imageFromRepo);
 
-            if (!_galleryRepository.Save())
+            if (!await _galleryRepository.SaveAsync())
             {
                 throw new Exception($"Deleting image with {id} failed on save.");
             }
@@ -140,22 +125,10 @@ namespace ImageGallery.API.Controllers
 
         [HttpPut("{id}")]
         [Authorize("MustOwnImage")]
-        public IActionResult UpdateImage(Guid id, 
+        public async Task<ActionResult> UpdateImage(Guid id, 
             [FromBody] ImageForUpdate imageForUpdate)
         {
-           
-            if (imageForUpdate == null)
-            {
-                return BadRequest();
-            }
-            
-            if (!ModelState.IsValid)
-            {
-                // return 422 - Unprocessable Entity when validation fails
-                return new UnprocessableEntityObjectResult(ModelState);
-            }
-
-            var imageFromRepo = _galleryRepository.GetImage(id);
+            var imageFromRepo = await _galleryRepository.GetImageAsync(id);
             if (imageFromRepo == null)
             {
                 return NotFound();
@@ -165,7 +138,7 @@ namespace ImageGallery.API.Controllers
 
             _galleryRepository.UpdateImage(imageFromRepo);
 
-            if (!_galleryRepository.Save())
+            if (!await _galleryRepository.SaveAsync())
             {
                 throw new Exception($"Updating image with {id} failed on save.");
             }

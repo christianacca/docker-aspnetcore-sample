@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace ImageGallery.API.Services
 {
@@ -18,16 +20,16 @@ namespace ImageGallery.API.Services
             return _context.Images.Any(i => i.Id == id);
         }       
 
-        public Image GetImage(Guid id)
+        public async Task<Image> GetImageAsync(Guid id)
         {
-            return _context.Images.FirstOrDefault(i => i.Id == id);
+            return await _context.Images.FirstOrDefaultAsync(i => i.Id == id);
         }
   
-        public IEnumerable<Image> GetImages(string ownerId)
+        public async Task<ICollection<Image>> GetImagesAsync(string ownerId)
         {
-            return _context.Images
+            return await _context.Images
                 .Where(i => i.OwnerId == ownerId)
-                .OrderBy(i => i.Title).ToList();
+                .OrderBy(i => i.Title).ToListAsync();
         }
 
         public bool IsImageOwner(Guid id, string ownerId)
@@ -56,9 +58,9 @@ namespace ImageGallery.API.Services
             // the actual files as well) for demo purposes.
         }
 
-        public bool Save()
+        public async Task<bool> SaveAsync()
         {
-            return (_context.SaveChanges() >= 0);
+            return await _context.SaveChangesAsync() >= 0;
         }
 
         public void Dispose()
