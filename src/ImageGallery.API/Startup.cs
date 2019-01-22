@@ -69,6 +69,7 @@ namespace ImageGallery.API
                 });
 
             services.AddDbContext<GalleryContext>(o => o.UseSqlServer(DbSettings.ConnectionString));
+            services.AddDbContext<MigrationGalleryContext>(o => o.UseSqlServer(DbSettings.MigrationsConnectionString));
 
             // register the repository
             services.AddScoped<IGalleryRepository, GalleryRepository>();

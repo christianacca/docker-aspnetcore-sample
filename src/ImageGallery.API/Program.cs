@@ -1,12 +1,10 @@
 ﻿using ImageGallery.API.Entities;
 using ImageGallery.API.Helpers;
-using ImageGallery.API.Settings;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
@@ -25,8 +23,8 @@ namespace ImageGallery.API
                 var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
                 try
                 {
-                    var context = scope.ServiceProvider.GetRequiredService<GalleryContext>();
-                    LogConnectionString(scope, logger);
+                    var context = scope.ServiceProvider.GetRequiredService<MigrationGalleryContext>();
+                    LogConnectionString(logger, context);
 
                     await context.Database.MigrateAsync();
                     await context.EnsureSeedDataForContextAsync();
@@ -42,10 +40,11 @@ namespace ImageGallery.API
             host.Run();
         }
 
-        private static void LogConnectionString(IServiceScope scope, ILogger<Program> logger)
+        private static void LogConnectionString(ILogger<Program> logger,
+            MigrationGalleryContext context)
         {
-            DbSettings dbSettings = scope.ServiceProvider.GetRequiredService<IOptions<DbSettings>>().Value;
-            var sanitizedCnnStrng = new SqlConnectionStringBuilder(dbSettings.ConnectionString)
+            var connectionString = context.Database.GetDbConnection().ConnectionString;
+            var sanitizedCnnStrng = new SqlConnectionStringBuilder(connectionString)
                 .SanitizedConnectionString();
 
             // Console.Out.WriteLine("Connection to db: {0}", dbSettings.ConnectionString);

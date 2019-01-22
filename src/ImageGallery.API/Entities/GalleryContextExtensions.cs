@@ -6,7 +6,7 @@ namespace ImageGallery.API.Entities
 {
     public static class GalleryContextExtensions
     {
-        public static async Task EnsureSeedDataForContextAsync(this GalleryContext context)
+        public static async Task EnsureSeedDataForContextAsync<T>(this T context) where T: GalleryContextBase
         {
             // first, clear the database.  This ensures we can always start 
             // fresh with each demo.  Not advised for production environments, obviously :-)
